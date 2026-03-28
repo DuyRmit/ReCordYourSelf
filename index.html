@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -493,10 +493,10 @@
     <div class="step-num">1</div> Script
   </div>
   <div class="step-tab" id="tab2">
-    <div class="step-num">2</div> Quay video
+    <div class="step-num">2</div> Record
   </div>
   <div class="step-tab" id="tab3">
-    <div class="step-num">3</div> Tải xuống
+    <div class="step-num">3</div> Download
   </div>
 </div>
 
@@ -505,23 +505,23 @@
   <!-- ── STEP 1 ── -->
   <div id="panel1" class="panel active">
     <div id="browser-warn">
-      Trình duyệt của bạn có thể không hỗ trợ đầy đủ. Hãy dùng <strong>Google Chrome</strong> hoặc <strong>Microsoft Edge</strong> để có kết quả tốt nhất.
+      Your browser may not be fully supported. Please use <strong>Google Chrome</strong> or <strong>Microsoft Edge</strong> for the best experience.
     </div>
 
     <div class="field">
-      <label>Tên giảng viên</label>
-      <input type="text" id="name-input" placeholder="VD: Dr. Nguyen Van A">
+      <label>Your name</label>
+      <input type="text" id="name-input" placeholder="e.g. Dr. Nguyen Van A">
     </div>
     <div class="field">
-      <label>Script bài giảng</label>
-      <textarea id="script-input" rows="10" placeholder="Chào mừng các bạn đến với khóa học...&#10;&#10;Trong học phần này, chúng ta sẽ cùng nhau khám phá..."></textarea>
+      <label>Script</label>
+      <textarea id="script-input" rows="10" placeholder="Welcome to this course...&#10;&#10;In this subject, we will explore..."></textarea>
     </div>
 
     <div class="info-row">
-      <span class="chip" id="word-count">0 từ</span>
-      <span class="chip" id="est-time">~0 phút</span>
+      <span class="chip" id="word-count">0 words</span>
+      <span class="chip" id="est-time">~0 min</span>
       <div style="flex:1"></div>
-      <button class="btn primary" onclick="goToStep2()">Tiếp theo →</button>
+      <button class="btn primary" onclick="goToStep2()">Next →</button>
     </div>
   </div>
 
@@ -530,20 +530,20 @@
 
     <div class="toolbar">
       <div class="toolbar-group">
-        <span>Cỡ chữ</span>
+        <span>Font size</span>
         <button class="icon-btn" onclick="changeFontSize(-2)">A−</button>
         <span class="value-display" id="font-val">22px</span>
         <button class="icon-btn" onclick="changeFontSize(2)">A+</button>
       </div>
       <div class="toolbar-divider"></div>
       <div class="toolbar-group">
-        <span>Tốc độ cuộn</span>
+        <span>Scroll speed</span>
         <input type="range" id="speed-slider" min="1" max="10" value="4" step="1" oninput="updateSpeed(this.value)">
         <span class="value-display" id="speed-val">4</span>
       </div>
       <div class="toolbar-divider"></div>
       <div class="toolbar-group">
-        <span>Đếm ngược</span>
+        <span>Countdown</span>
         <input type="range" id="cd-slider" min="3" max="10" value="5" step="1" oninput="updateCd(this.value)">
         <span class="value-display" id="cd-val">5s</span>
       </div>
@@ -556,29 +556,29 @@
       </div>
       <div id="countdown-overlay">
         <div id="countdown-num">5</div>
-        <div id="countdown-sub">Nhìn thẳng vào camera...</div>
+        <div id="countdown-sub">Look straight at the camera...</div>
       </div>
       <div id="cam-error">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"><path d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/><line x1="3" y1="3" x2="21" y2="21" stroke="var(--accent)" stroke-width="1.5"/></svg>
-        <strong style="font-size:15px">Không thể truy cập camera</strong>
-        <p id="cam-error-msg">Vui lòng cấp quyền camera và microphone cho trình duyệt, sau đó tải lại trang.</p>
+        <strong style="font-size:15px">Cannot access camera</strong>
+        <p id="cam-error-msg">Please allow camera and microphone access in your browser, then reload the page.</p>
       </div>
     </div>
 
     <div class="help-box" id="permission-help" style="display:none">
-      <strong>Trên Mac:</strong> Vào System Settings → Privacy &amp; Security → Camera → bật quyền cho Chrome/Edge.<br>
-      Sau đó <strong>tải lại trang</strong> và thử lại.
+      <strong>On Mac:</strong> Go to System Settings → Privacy &amp; Security → Camera → enable access for Chrome/Edge.<br>
+      Then <strong>reload the page</strong> and try again.
     </div>
 
     <div class="cam-controls">
-      <button class="btn" id="btn-back" onclick="goBack()">← Sửa script</button>
-      <button class="btn primary" id="btn-start" onclick="startCountdown()">Bắt đầu quay</button>
-      <button class="btn danger" id="btn-stop" onclick="stopRec()" style="display:none">Dừng &amp; lưu</button>
+      <button class="btn" id="btn-back" onclick="goBack()">← Edit script</button>
+      <button class="btn primary" id="btn-start" onclick="startCountdown()">Start recording</button>
+      <button class="btn danger" id="btn-stop" onclick="stopRec()" style="display:none">Stop &amp; save</button>
       <div class="spacer"></div>
       <div class="rec-badge" id="rec-badge"><div class="rec-dot"></div> REC</div>
     </div>
     <p style="font-size:12px;color:var(--text-muted);margin-top:8px">
-      Script sẽ tự cuộn khi bắt đầu quay. Camera hiển thị <em>mirror</em> nhưng video xuất ra sẽ không bị lật.
+      The script will scroll automatically when recording starts. The camera preview is mirrored, but the recorded video will not be flipped.
     </p>
   </div>
 
@@ -586,14 +586,14 @@
   <div id="panel3" class="panel">
     <div class="result-card">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-        <div class="success-tag">✓ Quay thành công</div>
+        <div class="success-tag">✓ Recording complete</div>
         <span id="format-badge" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:0.05em;border:1px solid var(--border)">—</span>
       </div>
       <video id="result-video" class="result-video" controls></video>
 
       <div class="progress-section" id="progress-section">
         <div class="progress-label">
-          <strong id="progress-title">Đang chuyển đổi sang MP4</strong>
+          <strong id="progress-title">Converting to MP4</strong>
           <span id="progress-pct">0%</span>
         </div>
         <div class="progress-bg"><div class="progress-fill" id="progress-fill"></div></div>
@@ -601,11 +601,11 @@
       </div>
 
       <div class="info-row" style="margin-top:1rem">
-        <button class="btn primary" id="btn-primary-dl">Tải xuống</button>
+        <button class="btn primary" id="btn-primary-dl">Download</button>
         <span id="convert-row">
-          <button class="btn" id="btn-direct-dl" onclick="dlDirect()">Tải WebM ngay</button>
+          <button class="btn" id="btn-direct-dl" onclick="dlDirect()">Download WebM (instant)</button>
         </span>
-        <button class="btn" onclick="resetAll()">Quay lại</button>
+        <button class="btn" onclick="resetAll()">Record again</button>
       </div>
       <p id="step3-note" style="font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6"></p>
     </div>
@@ -613,7 +613,7 @@
 
 </main>
 
-<footer>RMIT Vietnam · Learning Design · Chỉ dùng Chrome hoặc Edge để đảm bảo chất lượng tốt nhất</footer>
+<footer>RMIT Vietnam · Learning Design · Use Chrome or Edge for best results</footer>
 
 <!-- ffmpeg.wasm v0.11 — loaded lazily only when WebM fallback needs convert -->
 <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
@@ -649,8 +649,8 @@ if (isSafari || isFirefox) {
 // ── Word count ──
 document.getElementById('script-input').addEventListener('input', () => {
   const w = document.getElementById('script-input').value.trim().split(/\s+/).filter(Boolean).length;
-  document.getElementById('word-count').textContent = w + ' từ';
-  document.getElementById('est-time').textContent = '~' + Math.max(1, Math.round(w / 130)) + ' phút';
+  document.getElementById('word-count').textContent = w + ' words';
+  document.getElementById('est-time').textContent = '~' + Math.max(1, Math.round(w / 130)) + ' min';
 });
 
 // ── Step navigation ──
@@ -667,7 +667,7 @@ function setTab(n) {
 // ── Step 1 → 2 ──
 async function goToStep2() {
   const script = document.getElementById('script-input').value.trim();
-  if (!script) { alert('Vui lòng nhập script trước nhé!'); return; }
+  if (!script) { alert('Please enter your script first!'); return; }
 
   const promptEl = document.getElementById('prompt-text');
   promptEl.textContent = script;
@@ -701,10 +701,10 @@ async function startCamera() {
     helpEl.style.display = 'block';
     document.getElementById('cam-error-msg').textContent =
       e.name === 'NotAllowedError'
-        ? 'Bạn đã từ chối quyền truy cập. Cấp quyền trong cài đặt trình duyệt / hệ điều hành rồi tải lại trang.'
+        ? 'Access was denied. Grant camera/microphone permission in your browser or OS settings, then reload the page.'
         : e.name === 'NotFoundError'
-        ? 'Không tìm thấy camera hoặc microphone.'
-        : 'Lỗi: ' + e.message;
+        ? 'No camera or microphone found.'
+        : 'Error: ' + e.message;
     document.getElementById('btn-start').disabled = true;
   }
 }
@@ -727,7 +727,7 @@ function updateCd(v) { cdSecs = parseInt(v); document.getElementById('cd-val').t
 
 // ── Countdown ──
 function startCountdown() {
-  if (!stream) { alert('Camera chưa sẵn sàng!'); return; }
+  if (!stream) { alert('Camera not ready!'); return; }
   document.getElementById('btn-start').disabled = true;
   document.getElementById('btn-back').disabled = true;
 
@@ -787,25 +787,23 @@ function buildBlob() {
 
   // Update step 3 UI based on whether we already have MP4
   if (NATIVE_MP4) {
-    // Browser recorded MP4 natively — one-click download, no convert needed
     document.getElementById('format-badge').textContent = 'MP4';
     document.getElementById('format-badge').style.background = 'var(--green-soft)';
     document.getElementById('format-badge').style.color = 'var(--green)';
-    document.getElementById('btn-primary-dl').textContent = 'Tải MP4 xuống';
+    document.getElementById('btn-primary-dl').textContent = 'Download MP4';
     document.getElementById('btn-primary-dl').onclick = dlDirect;
     document.getElementById('convert-row').style.display = 'none';
     document.getElementById('step3-note').innerHTML =
-      'Trình duyệt của bạn hỗ trợ quay thẳng <strong>MP4</strong> — không cần chuyển đổi, tương thích với Premiere, DaVinci, CapCut.';
+      'Your browser supports native <strong>MP4</strong> recording — no conversion needed. Compatible with Premiere, DaVinci Resolve, and CapCut.';
   } else {
-    // Recorded WebM — offer convert or direct download
     document.getElementById('format-badge').textContent = 'WebM';
     document.getElementById('format-badge').style.background = '#fff8e6';
     document.getElementById('format-badge').style.color = '#7a5800';
-    document.getElementById('btn-primary-dl').textContent = 'Chuyển sang MP4 rồi tải';
+    document.getElementById('btn-primary-dl').textContent = 'Convert to MP4 & download';
     document.getElementById('btn-primary-dl').onclick = convertMp4;
     document.getElementById('convert-row').style.display = '';
     document.getElementById('step3-note').innerHTML =
-      'Trình duyệt chưa hỗ trợ quay MP4 trực tiếp. Nhấn <strong>Chuyển sang MP4</strong> để convert (chạy trên máy bạn, không upload) hoặc tải WebM ngay.';
+      'Your browser recorded in WebM format. Click <strong>Convert to MP4</strong> to convert locally (nothing is uploaded) — or download the WebM file immediately.';
   }
 
   setTab(3);
@@ -840,7 +838,7 @@ async function convertMp4() {
   btnPrimary.disabled = true;
   btnDirect.disabled  = true;
   progSec.classList.add('show');
-  setProgress(0, 'Đang tải ffmpeg.wasm (~20MB, chỉ lần đầu)...');
+  setProgress(0, 'Loading ffmpeg.wasm (~20MB, first time only)...');
 
   try {
     const { createFFmpeg, fetchFile } = FFmpeg;
@@ -851,19 +849,19 @@ async function convertMp4() {
         corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
         progress: ({ ratio }) => {
           const pct = Math.min(98, Math.round(ratio * 100));
-          setProgress(pct, 'Đang encode... ' + pct + '%');
+          setProgress(pct, 'Encoding... ' + pct + '%');
         },
       });
     }
     if (!ffmpegInst.isLoaded()) {
-      setProgress(3, 'Đang khởi động ffmpeg core...');
+      setProgress(3, 'Starting ffmpeg core...');
       await ffmpegInst.load();
     }
 
-    setProgress(10, 'Đang đọc video...');
+    setProgress(10, 'Reading video...');
     ffmpegInst.FS('writeFile', 'in.webm', await fetchFile(recordedBlob));
 
-    setProgress(15, 'Bắt đầu encode H.264...');
+    setProgress(15, 'Encoding H.264...');
     await ffmpegInst.run(
       '-i', 'in.webm',
       '-c:v', 'libx264', '-preset', 'fast', '-crf', '20',
@@ -873,7 +871,7 @@ async function convertMp4() {
       'out.mp4'
     );
 
-    setProgress(98, 'Đang lưu file...');
+    setProgress(98, 'Saving file...');
     const data    = ffmpegInst.FS('readFile', 'out.mp4');
     const mp4Blob = new Blob([data.buffer], { type: 'video/mp4' });
     const mp4Url  = URL.createObjectURL(mp4Blob);
@@ -885,8 +883,8 @@ async function convertMp4() {
     document.getElementById('format-badge').textContent = 'MP4';
     document.getElementById('format-badge').style.background = 'var(--green-soft)';
     document.getElementById('format-badge').style.color = 'var(--green)';
-    setProgress(100, 'Hoàn tất!');
-    document.getElementById('progress-title').textContent = 'Chuyển đổi thành công';
+    setProgress(100, 'Done!');
+    document.getElementById('progress-title').textContent = 'Conversion successful';
 
     const name = (document.getElementById('name-input').value.trim() || 'course-intro').replace(/\s+/g, '-');
     const a = document.createElement('a');
@@ -894,8 +892,7 @@ async function convertMp4() {
 
     setTimeout(() => {
       progSec.classList.remove('show');
-      // Switch primary button to direct MP4 download
-      btnPrimary.textContent = 'Tải MP4 xuống';
+      btnPrimary.textContent = 'Download MP4';
       btnPrimary.onclick = () => { const b = document.createElement('a'); b.href = mp4Url; b.download = name+'-intro.mp4'; b.click(); };
       btnPrimary.disabled = false;
       btnDirect.disabled  = false;
@@ -903,8 +900,8 @@ async function convertMp4() {
 
   } catch(e) {
     console.error(e);
-    document.getElementById('progress-title').textContent = 'Lỗi chuyển đổi';
-    setProgress(0, e.message || 'Thử tải WebM và convert bằng HandBrake / DaVinci.');
+    document.getElementById('progress-title').textContent = 'Conversion failed';
+    setProgress(0, e.message || 'Try downloading the WebM and converting with HandBrake or DaVinci Resolve.');
     btnPrimary.disabled = false;
     btnDirect.disabled  = false;
   }
@@ -921,8 +918,8 @@ function resetAll() {
   chunks = []; recordedBlob = null; recordedUrl = null; recordedMime = null; scrollPos = 0;
   document.getElementById('script-input').value = '';
   document.getElementById('name-input').value = '';
-  document.getElementById('word-count').textContent = '0 từ';
-  document.getElementById('est-time').textContent = '~0 phút';
+  document.getElementById('word-count').textContent = '0 words';
+  document.getElementById('est-time').textContent = '~0 min';
   document.getElementById('progress-section').classList.remove('show');
   setTab(1);
 }
