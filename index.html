@@ -585,7 +585,10 @@
   <!-- ── STEP 3 ── -->
   <div id="panel3" class="panel">
     <div class="result-card">
-      <div class="success-tag">✓ Quay thành công</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+        <div class="success-tag">✓ Quay thành công</div>
+        <span id="format-badge" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;letter-spacing:0.05em;border:1px solid var(--border)">—</span>
+      </div>
       <video id="result-video" class="result-video" controls></video>
 
       <div class="progress-section" id="progress-section">
@@ -594,18 +597,17 @@
           <span id="progress-pct">0%</span>
         </div>
         <div class="progress-bg"><div class="progress-fill" id="progress-fill"></div></div>
-        <div class="progress-msg" id="progress-msg">Đang tải ffmpeg.wasm (~30MB lần đầu)...</div>
+        <div class="progress-msg" id="progress-msg"></div>
       </div>
 
-      <div class="info-row" id="action-row">
-        <button class="btn primary" id="btn-mp4" onclick="convertMp4()">Xuất MP4</button>
-        <button class="btn" id="btn-webm" onclick="dlWebm()">Tải WebM (nhanh hơn)</button>
+      <div class="info-row" style="margin-top:1rem">
+        <button class="btn primary" id="btn-primary-dl">Tải xuống</button>
+        <span id="convert-row">
+          <button class="btn" id="btn-direct-dl" onclick="dlDirect()">Tải WebM ngay</button>
+        </span>
         <button class="btn" onclick="resetAll()">Quay lại</button>
       </div>
-      <p style="font-size:12px;color:var(--text-muted);margin-top:10px">
-        <strong>MP4</strong> tương thích với Premiere, DaVinci Resolve, CapCut — dễ ghép intro/outro hơn.<br>
-        <strong>WebM</strong> xuất ngay, không cần chờ — dùng khi cần gửi nhanh.
-      </p>
+      <p id="step3-note" style="font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6"></p>
     </div>
   </div>
 
@@ -613,16 +615,29 @@
 
 <footer>RMIT Vietnam · Learning Design · Chỉ dùng Chrome hoặc Edge để đảm bảo chất lượng tốt nhất</footer>
 
-<!-- ffmpeg.wasm -->
-<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.6/dist/umd/ffmpeg.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+<!-- ffmpeg.wasm v0.11 — loaded lazily only when WebM fallback needs convert -->
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
 
 <script>
 // ── State ──
-let stream = null, mediaRecorder = null, chunks = [], webmBlob = null, webmUrl = null;
+let stream = null, mediaRecorder = null, chunks = [];
+let recordedBlob = null, recordedUrl = null, recordedMime = null;
 let scrollInterval = null, scrollPos = 0;
 let speed = 4, fontSize = 22, cdSecs = 5;
 let ffmpegInst = null;
+
+// Detect best supported mime — MP4 first (Chrome 130+ on Mac/Win), WebM fallback
+const MIME_PRIORITY = [
+  'video/mp4;codecs=avc1,mp4a.40.2',
+  'video/mp4',
+  'video/webm;codecs=vp9,opus',
+  'video/webm;codecs=vp8,opus',
+  'video/webm',
+];
+const BEST_MIME = MIME_PRIORITY.find(m => {
+  try { return MediaRecorder.isTypeSupported(m); } catch(_) { return false; }
+}) || 'video/webm';
+const NATIVE_MP4 = BEST_MIME.startsWith('video/mp4');
 
 // ── Safari / browser check ──
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -741,17 +756,7 @@ function beginRec() {
   document.getElementById('rec-badge').classList.add('show');
 
   chunks = [];
-  // Pick best supported codec
-  const mimes = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm',
-  ];
-  let opts = {};
-  for (const m of mimes) {
-    if (MediaRecorder.isTypeSupported(m)) { opts = { mimeType: m }; break; }
-  }
-  mediaRecorder = new MediaRecorder(stream, opts);
+  mediaRecorder = new MediaRecorder(stream, { mimeType: BEST_MIME });
   mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
   mediaRecorder.onstop = buildBlob;
   mediaRecorder.start(500);
@@ -768,16 +773,40 @@ function stopRec() {
 }
 
 function buildBlob() {
-  webmBlob = new Blob(chunks, { type: 'video/webm' });
-  webmUrl  = URL.createObjectURL(webmBlob);
-  document.getElementById('result-video').src = webmUrl;
+  recordedMime = BEST_MIME;
+  recordedBlob = new Blob(chunks, { type: recordedMime });
+  recordedUrl  = URL.createObjectURL(recordedBlob);
+  document.getElementById('result-video').src = recordedUrl;
 
-  // Reset step 2 UI for next time
+  // Reset step 2 UI
   document.getElementById('btn-start').style.display = '';
   document.getElementById('btn-start').disabled = false;
   document.getElementById('btn-back').disabled = false;
   document.getElementById('btn-stop').style.display = 'none';
   document.getElementById('rec-badge').classList.remove('show');
+
+  // Update step 3 UI based on whether we already have MP4
+  if (NATIVE_MP4) {
+    // Browser recorded MP4 natively — one-click download, no convert needed
+    document.getElementById('format-badge').textContent = 'MP4';
+    document.getElementById('format-badge').style.background = 'var(--green-soft)';
+    document.getElementById('format-badge').style.color = 'var(--green)';
+    document.getElementById('btn-primary-dl').textContent = 'Tải MP4 xuống';
+    document.getElementById('btn-primary-dl').onclick = dlDirect;
+    document.getElementById('convert-row').style.display = 'none';
+    document.getElementById('step3-note').innerHTML =
+      'Trình duyệt của bạn hỗ trợ quay thẳng <strong>MP4</strong> — không cần chuyển đổi, tương thích với Premiere, DaVinci, CapCut.';
+  } else {
+    // Recorded WebM — offer convert or direct download
+    document.getElementById('format-badge').textContent = 'WebM';
+    document.getElementById('format-badge').style.background = '#fff8e6';
+    document.getElementById('format-badge').style.color = '#7a5800';
+    document.getElementById('btn-primary-dl').textContent = 'Chuyển sang MP4 rồi tải';
+    document.getElementById('btn-primary-dl').onclick = convertMp4;
+    document.getElementById('convert-row').style.display = '';
+    document.getElementById('step3-note').innerHTML =
+      'Trình duyệt chưa hỗ trợ quay MP4 trực tiếp. Nhấn <strong>Chuyển sang MP4</strong> để convert (chạy trên máy bạn, không upload) hoặc tải WebM ngay.';
+  }
 
   setTab(3);
 }
@@ -794,68 +823,69 @@ function stopScrolling() {
   if (scrollInterval) { clearInterval(scrollInterval); scrollInterval = null; }
 }
 
-// ── Download WebM ──
-function dlWebm() {
+// ── Download direct (native MP4 or WebM) ──
+function dlDirect() {
+  const ext  = NATIVE_MP4 ? 'mp4' : 'webm';
   const name = (document.getElementById('name-input').value.trim() || 'course-intro').replace(/\s+/g, '-');
   const a = document.createElement('a');
-  a.href = webmUrl; a.download = name + '-intro.webm'; a.click();
+  a.href = recordedUrl; a.download = name + '-intro.' + ext; a.click();
 }
 
-// ── Convert to MP4 ──
+// ── Convert WebM → MP4 via ffmpeg.wasm v0.11 (only runs when needed) ──
 async function convertMp4() {
-  const btnMp4 = document.getElementById('btn-mp4');
-  const btnWebm = document.getElementById('btn-webm');
-  const progSec = document.getElementById('progress-section');
+  const btnPrimary = document.getElementById('btn-primary-dl');
+  const btnDirect  = document.getElementById('btn-direct-dl');
+  const progSec    = document.getElementById('progress-section');
 
-  btnMp4.disabled = true;
-  btnWebm.disabled = true;
+  btnPrimary.disabled = true;
+  btnDirect.disabled  = true;
   progSec.classList.add('show');
-  setProgress(0, 'Đang tải ffmpeg.wasm (~30MB lần đầu)...');
+  setProgress(0, 'Đang tải ffmpeg.wasm (~20MB, chỉ lần đầu)...');
 
   try {
-    const { FFmpeg } = FFmpegWASM;
-    const { fetchFile, toBlobURL } = FFmpegUtil;
+    const { createFFmpeg, fetchFile } = FFmpeg;
 
     if (!ffmpegInst) {
-      ffmpegInst = new FFmpeg();
-      ffmpegInst.on('progress', ({ progress }) => {
-        const pct = Math.min(99, Math.round(progress * 100));
-        setProgress(pct, 'Đang encode... ' + pct + '%');
-      });
-      ffmpegInst.on('log', ({ message }) => {
-        document.getElementById('progress-msg').textContent = message.slice(0, 80);
-      });
-
-      const base = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
-      await ffmpegInst.load({
-        coreURL: await toBlobURL(base + '/ffmpeg-core.js', 'text/javascript'),
-        wasmURL: await toBlobURL(base + '/ffmpeg-core.wasm', 'application/wasm'),
+      ffmpegInst = createFFmpeg({
+        log: false,
+        corePath: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js',
+        progress: ({ ratio }) => {
+          const pct = Math.min(98, Math.round(ratio * 100));
+          setProgress(pct, 'Đang encode... ' + pct + '%');
+        },
       });
     }
+    if (!ffmpegInst.isLoaded()) {
+      setProgress(3, 'Đang khởi động ffmpeg core...');
+      await ffmpegInst.load();
+    }
 
-    setProgress(8, 'Đang đọc video...');
-    await ffmpegInst.writeFile('in.webm', await fetchFile(webmBlob));
+    setProgress(10, 'Đang đọc video...');
+    ffmpegInst.FS('writeFile', 'in.webm', await fetchFile(recordedBlob));
 
-    setProgress(12, 'Bắt đầu encode H.264...');
-    await ffmpegInst.exec([
+    setProgress(15, 'Bắt đầu encode H.264...');
+    await ffmpegInst.run(
       '-i', 'in.webm',
-      '-c:v', 'libx264',
-      '-preset', 'fast',
-      '-crf', '20',
-      '-c:a', 'aac',
-      '-b:a', '192k',
+      '-c:v', 'libx264', '-preset', 'fast', '-crf', '20',
+      '-c:a', 'aac', '-b:a', '192k',
       '-movflags', '+faststart',
       '-pix_fmt', 'yuv420p',
       'out.mp4'
-    ]);
+    );
 
-    setProgress(97, 'Đang đọc file đầu ra...');
-    const data = await ffmpegInst.readFile('out.mp4');
+    setProgress(98, 'Đang lưu file...');
+    const data    = ffmpegInst.FS('readFile', 'out.mp4');
     const mp4Blob = new Blob([data.buffer], { type: 'video/mp4' });
     const mp4Url  = URL.createObjectURL(mp4Blob);
 
+    try { ffmpegInst.FS('unlink', 'in.webm'); } catch(_) {}
+    try { ffmpegInst.FS('unlink', 'out.mp4'); } catch(_) {}
+
     document.getElementById('result-video').src = mp4Url;
-    setProgress(100, 'Hoàn tất! Đang tải xuống...');
+    document.getElementById('format-badge').textContent = 'MP4';
+    document.getElementById('format-badge').style.background = 'var(--green-soft)';
+    document.getElementById('format-badge').style.color = 'var(--green)';
+    setProgress(100, 'Hoàn tất!');
     document.getElementById('progress-title').textContent = 'Chuyển đổi thành công';
 
     const name = (document.getElementById('name-input').value.trim() || 'course-intro').replace(/\s+/g, '-');
@@ -864,17 +894,19 @@ async function convertMp4() {
 
     setTimeout(() => {
       progSec.classList.remove('show');
-      btnMp4.disabled = false;
-      btnWebm.disabled = false;
-    }, 2500);
+      // Switch primary button to direct MP4 download
+      btnPrimary.textContent = 'Tải MP4 xuống';
+      btnPrimary.onclick = () => { const b = document.createElement('a'); b.href = mp4Url; b.download = name+'-intro.mp4'; b.click(); };
+      btnPrimary.disabled = false;
+      btnDirect.disabled  = false;
+    }, 2000);
 
   } catch(e) {
     console.error(e);
-    setProgress(0, '');
-    document.getElementById('progress-title').textContent = 'Lỗi: ' + e.message;
-    document.getElementById('progress-msg').textContent = 'Thử tải WebM và convert bằng phần mềm khác.';
-    btnMp4.disabled = false;
-    btnWebm.disabled = false;
+    document.getElementById('progress-title').textContent = 'Lỗi chuyển đổi';
+    setProgress(0, e.message || 'Thử tải WebM và convert bằng HandBrake / DaVinci.');
+    btnPrimary.disabled = false;
+    btnDirect.disabled  = false;
   }
 }
 
@@ -886,7 +918,7 @@ function setProgress(pct, msg) {
 
 // ── Reset ──
 function resetAll() {
-  chunks = []; webmBlob = null; webmUrl = null; scrollPos = 0;
+  chunks = []; recordedBlob = null; recordedUrl = null; recordedMime = null; scrollPos = 0;
   document.getElementById('script-input').value = '';
   document.getElementById('name-input').value = '';
   document.getElementById('word-count').textContent = '0 từ';
